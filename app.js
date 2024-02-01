@@ -7,12 +7,12 @@ const port = process.env.PORT || 3000
 
 app.engine('hbs', handlebars({ extname: '.hbs' }))
 app.set('view engine', 'hbs')
-app.set('view', '/views')
+// app.set('view', '/views')
 
 app.use(routes)
 
 app.listen(port, () => {
-  console.info(`Example app listening on port ${port}!`)
+  console.info(`Example app listening on port http://localhost:${port}`)
 })
 
 module.exports = app
