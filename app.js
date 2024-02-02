@@ -2,6 +2,7 @@ const express = require('express')
 const handlebars = require('express-handlebars')
 const session = require('express-session')
 const flash = require('connect-flash')
+const passport = require('./config/passport')
 const routes = require('./routes')
 
 const app = express()
@@ -21,6 +22,8 @@ app.use((req, res, next) => {
   res.locals.error_messages = req.flash('error_messages')
   next()
 })
+app.use(passport.initialize())
+app.use(passport.session())
 app.use(routes)
 
 app.listen(port, () => {
