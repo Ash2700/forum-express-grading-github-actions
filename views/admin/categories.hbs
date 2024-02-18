@@ -1,19 +1,27 @@
 {{>tab route='category'}}
 <br />
 <div class="d-flex align-items-center pt-3 pb-5 my-3 text-while-5- bg-purple">
-  <form class="row"  action={{#if category}}"/admin/categories/{{category.id}}?_method=PUT"
-    {{else}}"/admin/categories" {{/if}} method="post">
+  {{#if category}}
+  <form class="row" action="/admin/categories/{{category.id}}?_method=PUT" method="post">
     <div class="col-auto">
-      <input class="form-control" type="text" name="name" placeholder="Category Name"
-        value="{{#if category}}{{category.name}}{{/if}}" required>
+      <input class="form-control" type="text" name="name" placeholder="Category Name" required
+        value="{{category.name}}">
     </div>
     <div class="col-auto">
-      <button type="submit" class="btn btn-success">
-        {{#if category}} edit
-        {{else}}create
-        {{/if}}</button>
+      <button type="submit" class="btn btn-success">Update</button>
+      <a class="btn btn-link link-secondary" href="/admin/categories">or Create New</a>
     </div>
   </form>
+  {{else}}
+  <form class="row" action="/admin/categories" method="post">
+    <div class="col-auto">
+      <input class="form-control" type="text" name="name" placeholder="Category Name" required>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-success">Create</button>
+    </div>
+  </form>
+  {{/if}}
 </div>
 <table class="table align-middle">
   <thead class="thead-dark">

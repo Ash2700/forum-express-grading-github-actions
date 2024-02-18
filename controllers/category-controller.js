@@ -3,18 +3,12 @@ const { Category } = require('../models')
 
 const categoryController = {
   getCategories: (req, res, next) => {
-    return Category.findAll({ raw: true })
-      .then(categories => {
-        res.render('admin/categories', { categories })
-      })
-      .catch(err => next(err))
-  },
-  getCategory: (req, res, next) => {
-    const id = req.params.id
-    return Category.findAll({ raw: true })
-      .then(categories => {
-        const category = categories.find(data => data.id === Number(id))
-        return res.render('admin/categories', { categories, category })
+    return Promise.all([
+      Category.findAll({ raw: true }),
+      req.params.id ? Category.findByPk(req.params.id) : null
+    ])
+      .then(([categories, category]) => {
+        res.render('admin/categories', { categories, category })
       })
       .catch(err => next(err))
   },
@@ -35,7 +29,7 @@ const categoryController = {
     Category.findByPk(id)
       .then(category => {
         if (!category) throw new Error('無此分類')
-        category.update({ name })
+        return category.update({ name })
       })
       .then(() => {
         req.flash('success_massages', '更新分類成功')
