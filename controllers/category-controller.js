@@ -20,10 +20,7 @@ const categoryController = {
   },
   postCategory: (req, res, next) => {
     const { name } = req.body
-    if (!name) {
-      req.flash('error_messages', '需填寫分類名稱')
-      return res.redirect('back')
-    }
+    if (!name) throw new Error('Category name is required')
     Category.create({ name })
       .then(() => {
         req.flash('success_messages', '新增料理分類成功')
@@ -34,10 +31,7 @@ const categoryController = {
   putCategory: (req, res, next) => {
     const id = req.params.id
     const { name } = req.body
-    if (!name) {
-      req.flash('error_messages', '需填寫分類名稱')
-      return res.redirect('back')
-    }
+    if (!name) throw new Error('Category name is required')
     Category.findByPk(id)
       .then(category => {
         if (!category) throw new Error('無此分類')
