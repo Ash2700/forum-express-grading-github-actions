@@ -37,27 +37,26 @@ const userController = {
     res.redirect('/signin')
   },
   getUser: (req, res, next) => {
-    User.findByPk(req.user.id, { raw: true })
+    return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error("user didn't exist!")
-        res.render('profile', { user })
+        res.render('users/profile', { user })
       })
       .catch(err => next(err))
   },
   editUser: (req, res, next) => {
-    User.findByPk(req.user.id, { raw: true })
+    return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error(" user didn't exist!")
-        return res.render('editProfile', { user })
+        res.render('users/edit', { user })
       })
       .catch(err => next(err))
   },
   putUser: (req, res, next) => {
     const { file } = req
     const { name } = req.body
-    const id = req.user.id
-    console.log(name)
-    Promise.all([
+    const id = req.params.id
+    return Promise.all([
       User.findByPk(id),
       localFileHandler(file)
     ]).then(([user, filePath]) => {
@@ -68,7 +67,7 @@ const userController = {
       })
     })
       .then(() => {
-        req.flash('succuss_massages', 'update profile success')
+        req.flash('success_messages', '使用者資料編輯成功')
         res.redirect(`/users/${id}`)
       })
       .catch(err => next(err))
