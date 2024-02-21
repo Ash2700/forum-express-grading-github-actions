@@ -1,0 +1,20 @@
+<div class="container">
+  <div class="row">
+    <div class="col-4">
+      <img class="card-img-top img-fluid" src="{{user.image}}" alt="Card image cap" width="286px" height="180px"
+            style="transition: opacity 0.5s; opacity:0;" onload="this.style.opacity=1;">
+    </div>
+    <div class="col-8">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+        Name: {{user.name}}
+      </li>
+      <li class="list-group-item">
+        Email: {{user.email}}
+      </li>
+      </ul>
+        <a href="/users/{{user.id}}/edit" class="btn btn-primary"> edit</a>
+        <a class="btn btn-outline-secondary" href="javascript:history.back()">Back</a>
+    </div>
+  </div>
+</div>
