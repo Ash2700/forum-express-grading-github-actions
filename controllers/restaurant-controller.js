@@ -42,12 +42,11 @@ const restaurantController = {
   },
   getDashboard: (req, res, next) => {
     return Restaurant.findByPk(req.params.id, {
-      include: Category,
-      nest: true,
-      raw: true
+      include: [Category, { model: Comment }]
     })
       .then(restaurant => {
-        res.render('dashboard', { restaurant })
+        const commentCount = restaurant.Comments.length
+        res.render('dashboard', { restaurant: restaurant.toJSON(), commentCount })
       })
   }
 }
