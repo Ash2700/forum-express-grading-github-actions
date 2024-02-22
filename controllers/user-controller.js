@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const db = require('../models')
-const { User } = db
+const { localFileHandler } = require('../helpers/file-helpers')
+const { User, Comment, Restaurant } = db
 const userController = {
   singUpPage: (req, res) => {
     res.render('signup')
@@ -34,6 +35,51 @@ const userController = {
     req.flash('success_messages', '登出成功！')
     req.logout()
     res.redirect('/signin')
+  },
+  getUser: (req, res, next) => {
+    return Promise.all([
+      User.findByPk(req.params.id, { raw: true }),
+      Comment.findAll({
+        raw: true,
+        include: Restaurant,
+        nest: true,
+        where: { userId: req.params.id }
+      })
+    ])
+      .then(([user, comment]) => {
+        if (!user) throw new Error("user didn't exist!")
+        const commentCount = comment.length
+        res.render('users/profile', { user, comment, count: commentCount })
+      })
+      .catch(err => next(err))
+  },
+  editUser: (req, res, next) => {
+    return User.findByPk(req.params.id, { raw: true })
+      .then(user => {
+        if (!user) throw new Error(" user didn't exist!")
+        res.render('users/edit', { user })
+      })
+      .catch(err => next(err))
+  },
+  putUser: (req, res, next) => {
+    const { file } = req
+    const { name } = req.body
+    const id = req.params.id
+    return Promise.all([
+      User.findByPk(id),
+      localFileHandler(file)
+    ]).then(([user, filePath]) => {
+      if (!user) throw new Error("user didn't exist!")
+      return user.update({
+        name,
+        image: filePath || user.image
+      })
+    })
+      .then(() => {
+        req.flash('success_messages', '使用者資料編輯成功')
+        res.redirect(`/users/${id}`)
+      })
+      .catch(err => next(err))
   }
 }
 

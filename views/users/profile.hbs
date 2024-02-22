@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="row border">
+    <div class="col-4 my-2 ">
+      <img class="card-img-top img-fluid" src="{{user.image}}" alt="Card image cap" width="300px" height="300px"
+            style="transition: opacity 0.5s; opacity:0;" onload="this.style.opacity=1;">
+    </div>
+    <div class="col-8 my-2">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+        Name: {{user.name}}
+      </li>
+      <li class="list-group-item">
+        Email: {{user.email}}
+      </li>
+      </ul>
+      
+        <a href="/users/{{user.id}}/edit" class="btn btn-primary my-1"> edit</a>
+        <a class="btn btn-outline-secondary my-1" href="javascript:history.back()">Back</a>
+    </div>
+  </div>
+  <div class="row border mt-3">
+  <div class="row mx-4 my-1">{{count}} 已評論餐廳</div>
+  <div class="row g-3 mx-0 my-1 bg-white ">
+    {{#each comment}}
+    <div class="col-1">
+      <div class="card border-0">
+      <a href="/restaurants/{{this.Restaurant.id}}" class="text-center">
+      <img src="{{this.Restaurant.image}}" alt="restaurants image" class="img-fluid" width="50px" height="50px">
+    </a>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  </div>
+</div>
