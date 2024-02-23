@@ -52,6 +52,39 @@ const restaurantController = {
       .then(([restaurant, commentCount]) => {
         res.render('dashboard', { restaurant, commentCount })
       })
+  },
+  getFeeds: (req, res, next) => {
+    const categoryId = Number(req.query.categoryId) || ''
+    return Promise.all([
+      Restaurant.findAll({
+        limit: 10,
+        order: [['createdAt', 'DESC']],
+        where: { ...categoryId ? { categoryId } : {} },
+        include: Category,
+        raw: true,
+        nest: true
+      }),
+      Comment.findAll({
+        limit: 12,
+        order: [['createdAt', 'DESC']],
+        include: [User, Restaurant],
+        raw: true,
+        nest: true
+      }),
+      Category.findAll({ raw: true })
+    ]).then(([restaurants, comments, categories]) => {
+      const backData = restaurants.map(item => ({
+        ...item,
+        description: item.description.substring(0, 100)
+      }))
+      console.log(categoryId)
+      return res.render('feed', {
+        restaurants: backData,
+        comments,
+        categories,
+        categoryId
+      })
+    }).catch(err => next(err))
   }
 }
 
