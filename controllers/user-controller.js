@@ -105,8 +105,10 @@ const userController = {
   removeFavorite: (req, res, next) => {
     const { restaurantId } = req.params
     return Favorite.findOne({
-      userId: req.user.id,
-      restaurantId
+      where: {
+        userId: req.user.id,
+        restaurantId
+      }
     })
       .then(favorite => {
         if (!favorite) throw new Error("you haven't favored this restaurant")
