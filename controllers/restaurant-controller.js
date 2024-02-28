@@ -20,12 +20,12 @@ const restaurantController = {
       Category.findAll({ raw: true })
     ])
       .then(([restaurants, categories]) => {
-        const favoriteRestaurantsId = req.user && req.user.FavoriteRestaurants.map(fr => fr.id)
+        const favoritedRestaurantsId = req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
         const likeRestaurantsId = req.user && req.user.LikeRestaurants.map(like => like.id)
         const data = restaurants.rows.map(r => ({
           ...r,
           description: r.description.substring(0, 50),
-          isFavorited: favoriteRestaurantsId.includes(r.id),
+          isFavorited: favoritedRestaurantsId.includes(r.id),
           isLike: likeRestaurantsId.includes(r.id)
         }))
         return res.render('restaurants', { restaurants: data, categories, categoryId, pagination: getPagination(limit, page, restaurants.count) })
@@ -94,6 +94,23 @@ const restaurantController = {
         categories,
         categoryId
       })
+    }).catch(err => next(err))
+  },
+  getTopRestaurants: (req, res, next) => {
+    return Restaurant.findAll({
+      include: [{ model: User, as: 'FavoritedUsers' }]
+    }).then(restaurants => {
+      restaurants = restaurants.map(restaurant => ({
+        ...restaurant.toJSON(),
+        favoritedCount: restaurant.FavoritedUsers.length,
+        description: restaurant.description.substring(0, 50),
+        isFavorited: req.user && req.user.FavoritedRestaurants
+          .some(data => data.id === restaurant.id)
+      }))
+        .sort((a, b) => b.favoritedCount - a.favoritedCount)
+        .slice(0, 10)
+      console.log('111111111')
+      return res.render('top-restaurants', { restaurants })
     }).catch(err => next(err))
   }
 }

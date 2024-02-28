@@ -149,7 +149,7 @@ const userController = {
       .catch(err => next(err))
   },
   getTopUsers: (req, res, next) => {
-    User.findAll({
+    return User.findAll({
       include: [{ model: User, as: 'Followers' }]
     }).then(users => {
       users = users.map(user => ({
@@ -163,7 +163,7 @@ const userController = {
   },
   addFollowing: (req, res, next) => {
     const { userId } = req.params
-    Promise.all([
+    return Promise.all([
       User.findByPk(userId),
       Followship.findOne({
         where: {
@@ -183,7 +183,7 @@ const userController = {
       .catch(err => next(err))
   },
   removeFollowing: (req, res, next) => {
-    Followship.findOne({
+    return Followship.findOne({
       where: {
         followerId: req.user.id,
         followingId: req.params.userId
