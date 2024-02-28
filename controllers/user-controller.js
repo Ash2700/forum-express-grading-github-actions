@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs')
 const db = require('../models')
 const { localFileHandler } = require('../helpers/file-helpers')
 const { User, Comment, Restaurant, Favorite, Like, Followship } = db
+const { Sequelize } = require('sequelize')
 const userController = {
   singUpPage: (req, res) => {
     res.render('signup')
@@ -38,8 +39,17 @@ const userController = {
   },
   getUser: (req, res, next) => {
     return Promise.all([
-      User.findByPk(req.params.id, { raw: true }),
+      User.findByPk(req.params.id, {
+        nest: true,
+        include: [
+          { model: Restaurant, as: 'FavoritedRestaurants' },
+          { model: User, as: 'Followers' },
+          { model: User, as: 'Followings' }
+        ]
+      }),
       Comment.findAll({
+        attributes: [Sequelize.fn('DISTINCT', 'restaurantId')],
+        order: [['updatedAt', 'DESC']],
         raw: true,
         include: Restaurant,
         nest: true,
@@ -48,8 +58,19 @@ const userController = {
     ])
       .then(([user, comment]) => {
         if (!user) throw new Error("user didn't exist!")
+        console.log(user.toJSON())
         const commentCount = comment.length
-        res.render('users/profile', { user, comment, count: commentCount })
+        const favoriteCount = user.FavoritedRestaurants.length
+        const followerCount = user.Followers.length
+        const followingCount = user.Followings.length
+        res.render('users/profile', {
+          user: user.toJSON(),
+          comment,
+          count: commentCount,
+          favoriteCount,
+          followerCount,
+          followingCount
+        })
       })
       .catch(err => next(err))
   },
