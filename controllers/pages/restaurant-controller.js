@@ -1,5 +1,5 @@
-const { Restaurant, Category, User, Comment } = require('../models')
-const { getOffset, getPagination } = require('../helpers/pagination-helper')
+const { Restaurant, Category, User, Comment } = require('../../models')
+const { getOffset, getPagination } = require('../../helpers/pagination-helper')
 
 const restaurantController = {
   getRestaurants: (req, res, next) => {
@@ -21,7 +21,7 @@ const restaurantController = {
     ])
       .then(([restaurants, categories]) => {
         const favoritedRestaurantsId = req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
-        const likeRestaurantsId = req.user && req.user.LikeRestaurants.map(like => like.id)
+        const likeRestaurantsId = req.user && req.user.LikedRestaurants.map(like => like.id)
         const data = restaurants.rows.map(r => ({
           ...r,
           description: r.description.substring(0, 50),
