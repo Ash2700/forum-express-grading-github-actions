@@ -6,10 +6,9 @@ const adminController = {
       req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
   },
   createRestaurant: (req, res, next) => {
-    return Category.findAll({
-      raw: true
-    }).then(categories => res.render('admin/create-restaurant', { categories }))
-      .catch(err => next(err))
+    adminServeries.createRestaurant(
+      req, (err, data) => err ? next(err) : res.render('admin/create-restaurant', data)
+    )
   },
   postRestaurant: (req, res, next) => {
     adminServeries.postRestaurant(req, (err, data) => {

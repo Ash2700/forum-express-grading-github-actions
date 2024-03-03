@@ -65,6 +65,12 @@ const adminServeries = {
         callback(null, { restaurant: data })
       })
       .catch(err => callback(err))
+  },
+  createRestaurant: (req, callback) => {
+    return Category.findAll({
+      raw: true
+    }).then(categories => callback(null, { categories }))
+      .catch(err => callback(err))
   }
 }
 module.exports = adminServeries
