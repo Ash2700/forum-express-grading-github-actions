@@ -33,7 +33,11 @@ const adminServeries = {
   },
   putRestaurant: (req, callback) => {
     const { name, tel, address, openingHours, description, categoryId } = req.body
-    if (!name) throw new Error('Restaurant name is required!')
+    if (!name) {
+      const err = new Error('Restaurant name is required!')
+      err.status = 404
+      throw err
+    }
     const { file } = req
     Promise.all([
       Restaurant.findByPk(req.params.id),
@@ -70,6 +74,22 @@ const adminServeries = {
     return Category.findAll({
       raw: true
     }).then(categories => callback(null, { categories }))
+      .catch(err => callback(err))
+  },
+  getRestaurant: (req, callback) => {
+    Restaurant.findByPk(req.params.id, {
+      raw: true,
+      nest: true,
+      include: [Category]
+    })
+      .then(restaurant => {
+        if (!restaurant) {
+          const err = new Error("Restaurant didn't exist")
+          err.status = 404
+          throw err
+        }
+        callback(null, { restaurant })
+      })
       .catch(err => callback(err))
   }
 }

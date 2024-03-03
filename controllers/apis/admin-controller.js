@@ -1,21 +1,20 @@
 const adminServeries = require('../../serveries/admin-serveries')
+const wrapServiceCall = serviceFunc => {
+  return (req, res, next) => {
+    serviceFunc(req, (err, data) => {
+      if (err) next(err)
+      else res.json({ status: 'success', data })
+    })
+  }
+}
 
 const adminController = {
-  getRestaurants: (req, res, next) => {
-    adminServeries.getRestaurants(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
-  },
-  deleteRestaurant: (req, res, next) => {
-    adminServeries.deleteRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
-  },
-  putRestaurant: (req, res, next) => {
-    adminServeries.putRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
-  },
-  postRestaurant: (req, res, next) => {
-    adminServeries.postRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
-  },
-  createRestaurant: (req, res, next) => {
-    adminServeries.createRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
-  }
+  getRestaurants: wrapServiceCall(adminServeries.getRestaurants),
+  deleteRestaurant: wrapServiceCall(adminServeries.deleteRestaurant),
+  putRestaurant: wrapServiceCall(adminServeries.putRestaurant),
+  postRestaurant: wrapServiceCall(adminServeries.postRestaurant),
+  createRestaurant: wrapServiceCall(adminServeries.createRestaurant),
+  getRestaurant: wrapServiceCall(adminServeries.getRestaurant)
 }
 
 module.exports = adminController
