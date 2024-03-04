@@ -6,7 +6,7 @@ const adminController = {
       req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
   },
   createRestaurant: (req, res, next) => {
-    adminServeries.createRestaurant(
+    adminServeries.getCategories(
       req, (err, data) => err ? next(err) : res.render('admin/create-restaurant', data)
     )
   },
@@ -23,6 +23,7 @@ const adminController = {
       err ? next(err) : res.render('admin/restaurant', data)
     )
   },
+  // 不加入api重構
   editRestaurant: (req, res, next) => {
     return Promise.all([
       Restaurant.findByPk(req.params.id, { raw: true }),

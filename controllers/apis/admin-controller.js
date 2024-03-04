@@ -13,8 +13,9 @@ const adminController = {
   deleteRestaurant: wrapServiceCall(adminServeries.deleteRestaurant),
   putRestaurant: wrapServiceCall(adminServeries.putRestaurant),
   postRestaurant: wrapServiceCall(adminServeries.postRestaurant),
-  createRestaurant: wrapServiceCall(adminServeries.createRestaurant),
-  getRestaurant: wrapServiceCall(adminServeries.getRestaurant)
+  getCategories: wrapServiceCall(adminServeries.getCategories),
+  getRestaurant: wrapServiceCall(adminServeries.getRestaurant),
+  getUsers: wrapServiceCall(adminServeries.getUsers)
 }
 
 module.exports = adminController

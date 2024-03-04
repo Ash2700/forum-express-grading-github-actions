@@ -1,4 +1,4 @@
-const { Restaurant, Category } = require('../models')
+const { Restaurant, Category, User } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination-helper')
 const { localFileHandler } = require('../helpers/file-helpers')
 
@@ -70,7 +70,7 @@ const adminServeries = {
       })
       .catch(err => callback(err))
   },
-  createRestaurant: (req, callback) => {
+  getCategories: (req, callback) => {
     return Category.findAll({
       raw: true
     }).then(categories => callback(null, { categories }))
@@ -89,6 +89,18 @@ const adminServeries = {
           throw err
         }
         callback(null, { restaurant })
+      })
+      .catch(err => callback(err))
+  },
+  getUsers: (req, callback) => {
+    return User.findAll({ raw: true })
+      .then(users => {
+        if (!users) {
+          const err = new Error(' something make error')
+          err.status = 404
+          throw err
+        }
+        callback(null, { users })
       })
       .catch(err => callback(err))
   }
