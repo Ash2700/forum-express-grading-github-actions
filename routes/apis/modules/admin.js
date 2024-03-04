@@ -12,5 +12,6 @@ router.post('/restaurants', upload.single('image'), adminController.postRestaura
 router.get('/restaurants', adminController.getRestaurants)
 
 router.get('/users', adminController.getUsers)
+router.patch('/users/:id', adminController.patchUser)
 
 module.exports = router

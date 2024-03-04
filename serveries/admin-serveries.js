@@ -103,6 +103,26 @@ const adminServeries = {
         callback(null, { users })
       })
       .catch(err => callback(err))
+  },
+  patchUser: (req, callback) => {
+    return User.findByPk(req.params.id)
+      .then(user => {
+        if (!user) {
+          const err = new Error('something make error')
+          err.status = 404
+          throw err
+        }
+        if (user.email === 'root@example.com') {
+          const err = new Error('禁止變更 root 權限')
+          err.status = 400
+          throw err
+        }
+        return user.update({ isAdmin: (!user.isAdmin) })
+      })
+      .then(data => {
+        callback(null, data)
+      })
+      .catch(err => callback(err))
   }
 }
 module.exports = adminServeries

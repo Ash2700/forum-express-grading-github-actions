@@ -45,18 +45,16 @@ const adminController = {
   deleteRestaurant: (req, res, next) => {
     adminServeries.deleteRestaurant(req, (err, data) => {
       if (err) return next(err)
+      req.flash('success', 'delete successfully the restaurant')
       req.session.deleteData = data
       return res.redirect('/admin/restaurants')
     })
       .catch(err => next(err))
   },
   getUsers: (req, res, next) => {
-    return User.findAll({ raw: true })
-      .then(users => {
-        if (!users) throw new Error(' something make error')
-        res.render('admin/userManagement', { users })
-      })
-      .catch(err => next(err))
+    adminServeries.getUsers(req, (err, data) =>
+      err ? next(err) : res.render('admin/userManagement', { data })
+    )
   },
   patchUser: (req, res, next) => {
     return User.findByPk(req.params.id)
