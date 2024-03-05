@@ -30,8 +30,10 @@ const adminController = {
       adminServeries.getRestaurant(req),
       adminServeries.getCategories(req)
     ])
-      .then(([restaurant, categories]) => {
-        if (!restaurant) throw new Error("Restaurant did't exist!")
+      .then(([restaurantData, categoriesData]) => {
+        if (!restaurantData) throw new Error("Restaurant did't exist!")
+        const restaurant = restaurantData.restaurant
+        const categories = categoriesData.categories
         res.render('admin/edit-restaurant', { restaurant, categories })
       })
       .catch(err => next(err))
@@ -64,7 +66,7 @@ const adminController = {
     adminServeries.patchUser(req)
       .then(data => {
         req.flash('success_messages', '使用者權限變更成功')
-        res.session.patchData = data
+        req.session.patchData = data
         res.redirect('/admin/users')
       })
       .catch(err => next(err))

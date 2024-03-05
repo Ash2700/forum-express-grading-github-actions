@@ -62,7 +62,7 @@ const adminServeries = {
     if (!name) throw new Error('Restaurant name is required')
     const { file } = req
     return localFileHandler(file).then(filePath =>
-      Restaurant.create({ name, tel, address, openingHours, description, image: filePath || categoryId }))
+      Restaurant.create({ name, tel, address, openingHours, description, image: filePath, categoryId }))
       .then(data => {
         return ({ restaurant: data })
       })
@@ -71,7 +71,10 @@ const adminServeries = {
   getCategories: req => {
     return Category.findAll({
       raw: true
-    }).then(categories => ({ categories }))
+    }).then(categories => {
+      return ({ categories })
+    }
+    )
       .catch(err => { throw err })
   },
   getRestaurant: req => {

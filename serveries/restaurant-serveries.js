@@ -1,4 +1,4 @@
-const { Restaurant, Category, User, Comment } = require('../models')
+const { Restaurant, Category, User, Comment, Favorite } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination-helper')
 
 const restaurantServeries = {
@@ -26,7 +26,7 @@ const restaurantServeries = {
         const likedRestaurantsId = req.user?.LikedRestaurants ? req.user.LikedRestaurants.map(lr => lr.id) : []
         const data = restaurants.rows.map(r => ({
           ...r,
-          description: r.description.substring(0, 50),
+          description: r.description?.substring(0, 50),
           isFavorited: favoritedRestaurantsId.includes(r.id),
           isLiked: likedRestaurantsId.includes(r.id)
         }))
@@ -63,10 +63,11 @@ const restaurantServeries = {
         nest: true,
         raw: true
       }),
-      Comment.count({ where: { restaurantId: req.params.id } })
+      Comment.count({ where: { restaurantId: req.params.id } }),
+      Favorite.count({ where: { restaurantId: req.params.id } })
     ])
-      .then(([restaurant, commentCount]) => {
-        return ({ restaurant, commentCount })
+      .then(([restaurant, commentCount, favoriteCount]) => {
+        return ({ restaurant, commentCount, favoriteCount })
       })
       .catch(err => { throw err })
   },
@@ -90,9 +91,10 @@ const restaurantServeries = {
       }),
       Category.findAll({ raw: true })
     ]).then(([restaurants, comments, categories]) => {
+      console.log(restaurants)
       const backData = restaurants.map(item => ({
         ...item,
-        description: item.description.substring(0, 100) || ''
+        description: item.description?.substring(0, 100)
       }))
       return ({
         restaurants: backData,
@@ -109,7 +111,7 @@ const restaurantServeries = {
       restaurants = restaurants.map(restaurant => ({
         ...restaurant.toJSON(),
         favoritedCount: restaurant.FavoritedUsers.length,
-        description: restaurant.description.substring(0, 50),
+        description: restaurant.description?.substring(0, 50),
         isFavorited: req.user && req.user.FavoritedRestaurants
           .some(data => data.id === restaurant.id)
       }))
