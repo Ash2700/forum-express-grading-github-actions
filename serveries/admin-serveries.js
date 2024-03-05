@@ -3,22 +3,22 @@ const { getOffset, getPagination } = require('../helpers/pagination-helper')
 const { localFileHandler } = require('../helpers/file-helpers')
 
 const adminServeries = {
-  getRestaurants: (req, callback) => {
+  getRestaurants: req => {
     const DEFAULT_LIMIT = 10
     const page = Number(req.query.page) || 1
     const limit = Number(req.query.limit) || DEFAULT_LIMIT
     const offset = getOffset(limit, page)
-    Restaurant.findAndCountAll({
+    return Restaurant.findAndCountAll({
       raw: true,
       nest: true,
       limit,
       offset,
       include: [Category]
     })
-      .then(restaurants => callback(null, { restaurants: restaurants.rows, pagination: getPagination(limit, page, restaurants.count) }))
-      .catch(err => callback(err))
+      .then(restaurants => ({ restaurants: restaurants.rows, pagination: getPagination(limit, page, restaurants.count) }))
+      .catch(err => { throw err })
   },
-  deleteRestaurant: (req, callback) => {
+  deleteRestaurant: req => {
     return Restaurant.findByPk(req.params.id)
       .then(restaurant => {
         if (!restaurant) {
@@ -28,10 +28,10 @@ const adminServeries = {
         }
         return restaurant.destroy()
       })
-      .then(deleteRestaurant => callback(null, { restaurant: deleteRestaurant }))
-      .catch(err => callback(err))
+      .then(deleteRestaurant => ({ restaurant: deleteRestaurant }))
+      .catch(err => { throw err })
   },
-  putRestaurant: (req, callback) => {
+  putRestaurant: req => {
     const { name, tel, address, openingHours, description, categoryId } = req.body
     if (!name) {
       const err = new Error('Restaurant name is required!')
@@ -39,7 +39,7 @@ const adminServeries = {
       throw err
     }
     const { file } = req
-    Promise.all([
+    return Promise.all([
       Restaurant.findByPk(req.params.id),
       localFileHandler(file)
     ]).then(([restaurant, filePath]) => {
@@ -54,45 +54,39 @@ const adminServeries = {
         categoryId
       })
     })
-      .then(data => {
-        callback(null, { restaurant: data })
-      })
-      .catch(err => callback(err))
+      .then(data => ({ restaurant: data }))
+      .catch(err => { throw err })
   },
-  postRestaurant: (req, callback) => {
+  postRestaurant: req => {
     const { name, tel, address, openingHours, description, categoryId } = req.body
     if (!name) throw new Error('Restaurant name is required')
     const { file } = req
-    localFileHandler(file).then(filePath =>
-      Restaurant.create({ name, tel, address, openingHours, description, image: filePath || null, categoryId }))
+    return localFileHandler(file).then(filePath =>
+      Restaurant.create({ name, tel, address, openingHours, description, image: filePath || categoryId }))
       .then(data => {
-        callback(null, { restaurant: data })
+        return ({ restaurant: data })
       })
-      .catch(err => callback(err))
+      .catch(err => { throw err })
   },
-  getCategories: (req, callback) => {
+  getCategories: req => {
     return Category.findAll({
       raw: true
-    }).then(categories => callback(null, { categories }))
-      .catch(err => callback(err))
+    }).then(categories => ({ categories }))
+      .catch(err => { throw err })
   },
-  getRestaurant: (req, callback) => {
-    Restaurant.findByPk(req.params.id, {
+  getRestaurant: req => {
+    return Restaurant.findByPk(req.params.id, {
       raw: true,
       nest: true,
       include: [Category]
     })
       .then(restaurant => {
-        if (!restaurant) {
-          const err = new Error("Restaurant didn't exist")
-          err.status = 404
-          throw err
-        }
-        callback(null, { restaurant })
+        if (!restaurant) throw new Error("Restaurant didn't exist")
+        return ({ restaurant })
       })
-      .catch(err => callback(err))
+      .catch(err => { throw err })
   },
-  getUsers: (req, callback) => {
+  getUsers: req => {
     return User.findAll({ raw: true })
       .then(users => {
         if (!users) {
@@ -100,11 +94,11 @@ const adminServeries = {
           err.status = 404
           throw err
         }
-        callback(null, { users })
+        return ({ users })
       })
-      .catch(err => callback(err))
+      .catch(err => { throw err })
   },
-  patchUser: (req, callback) => {
+  patchUser: req => {
     return User.findByPk(req.params.id)
       .then(user => {
         if (!user) {
@@ -119,10 +113,8 @@ const adminServeries = {
         }
         return user.update({ isAdmin: (!user.isAdmin) })
       })
-      .then(data => {
-        callback(null, data)
-      })
-      .catch(err => callback(err))
+      .then(data => ({ data }))
+      .catch(err => { throw err })
   }
 }
 module.exports = adminServeries

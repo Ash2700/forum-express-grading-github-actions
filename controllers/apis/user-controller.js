@@ -16,11 +16,9 @@ const userController = {
     } catch (err) { next(err) }
   },
   signUp: (req, res, next) => {
-    console.log(req.body)
-    userService.signUp(req, (err, data) => {
-      if (err) next(err)
-      else res.json({ status: 'success', data })
-    })
+    userService.signUp(req)
+      .then(data => res.json({ status: 'success', data }))
+      .catch(err => next(err))
   }
 }
 module.exports = userController

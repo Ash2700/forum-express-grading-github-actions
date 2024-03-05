@@ -1,22 +1,15 @@
 const adminServeries = require('../../serveries/admin-serveries')
-const wrapServiceCall = serviceFunc => {
-  return (req, res, next) => {
-    serviceFunc(req, (err, data) => {
-      if (err) next(err)
-      else res.json({ status: 'success', data })
-    })
-  }
-}
+const wrapCode = require('../../helpers/warpCode-helper')
 
 const adminController = {
-  getRestaurants: wrapServiceCall(adminServeries.getRestaurants),
-  deleteRestaurant: wrapServiceCall(adminServeries.deleteRestaurant),
-  putRestaurant: wrapServiceCall(adminServeries.putRestaurant),
-  postRestaurant: wrapServiceCall(adminServeries.postRestaurant),
-  getCategories: wrapServiceCall(adminServeries.getCategories),
-  getRestaurant: wrapServiceCall(adminServeries.getRestaurant),
-  getUsers: wrapServiceCall(adminServeries.getUsers),
-  patchUser: wrapServiceCall(adminServeries.patchUser)
+  getRestaurants: wrapCode.forApiWrapServiceCall(adminServeries.getRestaurants),
+  deleteRestaurant: wrapCode.forApiWrapServiceCall(adminServeries.deleteRestaurant),
+  putRestaurant: wrapCode.forApiWrapServiceCall(adminServeries.putRestaurant),
+  postRestaurant: wrapCode.forApiWrapServiceCall(adminServeries.postRestaurant),
+  getCategories: wrapCode.forApiWrapServiceCall(adminServeries.getCategories),
+  getRestaurant: wrapCode.forApiWrapServiceCall(adminServeries.getRestaurant),
+  getUsers: wrapCode.forApiWrapServiceCall(adminServeries.getUsers),
+  patchUser: wrapCode.forApiWrapServiceCall(adminServeries.patchUser)
 }
 
 module.exports = adminController

@@ -1,13 +1,13 @@
 const { User } = require('../models')
 const bcrypt = require('bcryptjs')
 const userService = {
-  signUp: (req, callback) => {
+  signUp: req => {
     if (req.body.password !== req.body.passwordCheck) {
       const err = new Error('password do not match!')
       err.status = 400
       throw err
     }
-    User.findOne({ where: { email: req.body.email } })
+    return User.findOne({ where: { email: req.body.email } })
       .then(user => {
         if (user) {
           const err = new Error('Email already exists!')
@@ -17,16 +17,13 @@ const userService = {
         return bcrypt.hash(req.body.password, 10)
       })
       .then(hash => {
-        User.create({
+        return User.create({
           name: req.body.name,
           email: req.body.email,
           password: hash
         })
       })
-      .then(data => {
-        callback(null, data)
-      })
-      .catch(err => callback(err))
+      .catch(err => { throw err })
   }
 }
 module.exports = userService
