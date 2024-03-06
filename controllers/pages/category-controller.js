@@ -1,36 +1,21 @@
 
-const { Category } = require('../../models')
+const categoryService = require('../../serveries/category-service')
 
 const categoryController = {
   getCategories: (req, res, next) => {
-    return Promise.all([
-      Category.findAll({ raw: true }),
-      req.params.id ? Category.findByPk(req.params.id) : null
-    ])
-      .then(([categories, category]) => {
-        res.render('admin/categories', { categories, category })
-      })
+    categoryService.getCategories(req)
+      .then(data => { res.render('admin/categories', data) })
       .catch(err => next(err))
   },
   postCategory: (req, res, next) => {
-    const { name } = req.body
-    if (!name) throw new Error('Category name is required')
-    Category.create({ name })
+    categoryService.postCategory(req)
       .then(() => {
         req.flash('success_messages', '新增料理分類成功')
         res.redirect('/admin/categories')
-      })
-      .catch(err => next(err))
+      }).catch(err => next(err))
   },
   putCategory: (req, res, next) => {
-    const id = req.params.id
-    const { name } = req.body
-    if (!name) throw new Error('Category name is required')
-    Category.findByPk(id)
-      .then(category => {
-        if (!category) throw new Error('無此分類')
-        return category.update({ name })
-      })
+    categoryService.putCategory(req)
       .then(() => {
         req.flash('success_massages', '更新分類成功')
         res.redirect('/admin/categories')
@@ -38,12 +23,7 @@ const categoryController = {
       .catch(err => next(err))
   },
   deleteCategory: (req, res, next) => {
-    const id = req.params.id
-    Category.findByPk(id)
-      .then(category => {
-        if (!category) throw new Error('無此分類')
-        return category.destroy()
-      })
+    categoryService.deleteCategory(req)
       .then(() => res.redirect('/admin/categories'))
       .catch(err => next(err))
   }
