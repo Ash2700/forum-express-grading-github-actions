@@ -1,6 +1,6 @@
 const { Comment, User, Restaurant } = require('../models')
-const commentController = {
-  postComment: (req, res, next) => {
+const commentService = {
+  postComment: req => {
     const { restaurantId, text } = req.body
     const userId = req.user.id
     if (!text) throw new Error('Comment text is required')
@@ -13,18 +13,18 @@ const commentController = {
         if (!restaurant) throw new Error(" Restaurant didn't exist!")
         return Comment.create({ text, userId, restaurantId })
       })
-      .then(() => res.redirect(`restaurants/${restaurantId}`))
-      .catch(err => next(err))
+      .then(data => ({ data }))
+      .catch(err => { throw err })
   },
-  deleteComment: (req, res, next) => {
+  deleteComment: req => {
     return Comment.findByPk(req.params.id)
       .then(comment => {
         if (!comment) throw new Error("Comment didn't exist!")
         return comment.destroy()
       })
-      .then(deleteComment => res.redirect(`/restaurants/${deleteComment.restaurantId}`))
-      .catch(err => next(err))
+      .then(data => ({ data: data.toJSON() }))
+      .catch(err => { throw err })
   }
 }
 
-module.exports = commentController
+module.exports = commentService

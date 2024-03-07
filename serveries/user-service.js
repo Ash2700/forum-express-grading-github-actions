@@ -1,45 +1,45 @@
-const bcrypt = require('bcryptjs')
-const db = require('../models')
+const { User, Comment, Restaurant, Favorite, Like, Followship } = require('../models')
+const { Sequelize } = require('sequelize')
 const { localFileHandler } = require('../helpers/file-helpers')
-const { User, Comment, Restaurant, Favorite, Like, Followship } = db
-const userController = {
-  singUpPage: (req, res) => {
-    res.render('signup')
-  },
-  singUp: (req, res, next) => {
-    if (req.body.password !== req.body.passwordCheck) throw new Error('password do not match!')
-    User.findOne({ where: { email: req.body.email } })
+const bcrypt = require('bcryptjs')
+const userService = {
+  signUp: req => {
+    if (req.body.password !== req.body.passwordCheck) {
+      const err = new Error('password do not match!')
+      err.status = 400
+      throw err
+    }
+    return User.findOne({ where: { email: req.body.email } })
       .then(user => {
-        if (user) throw new Error('Email already exists!')
+        if (user) {
+          const err = new Error('Email already exists!')
+          err.status = 400
+          throw err
+        }
         return bcrypt.hash(req.body.password, 10)
       })
-      .then(hash => User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: hash
-      }))
-      .then(() => {
-        req.flash('success_messages', '成功註冊帳號')
-        res.redirect('/signin')
+      .then(hash => {
+        return User.create({
+          name: req.body.name,
+          email: req.body.email,
+          password: hash
+        })
       })
-      .catch(err => next(err))
+      .catch(err => { throw err })
   },
-  signInPage: (req, res) => {
-    res.render('signin')
-  },
-  signIn: (req, res) => {
-    req.flash('success_messages', '成功登入！')
-    res.redirect('/restaurants')
-  },
-  logout: (req, res) => {
-    req.flash('success_messages', '登出成功！')
-    req.logout()
-    res.redirect('/signin')
-  },
-  getUser: (req, res, next) => {
+  getUser: req => {
     return Promise.all([
-      User.findByPk(req.params.id, { raw: true }),
+      User.findByPk(req.params.id, {
+        nest: true,
+        include: [
+          { model: Restaurant, as: 'FavoritedRestaurants' },
+          { model: User, as: 'Followers' },
+          { model: User, as: 'Followings' }
+        ]
+      }),
       Comment.findAll({
+        attributes: [Sequelize.fn('DISTINCT', 'restaurantId')],
+        order: [['updatedAt', 'DESC']],
         raw: true,
         include: Restaurant,
         nest: true,
@@ -49,19 +49,29 @@ const userController = {
       .then(([user, comment]) => {
         if (!user) throw new Error("user didn't exist!")
         const commentCount = comment.length
-        res.render('users/profile', { user, comment, count: commentCount })
+        const favoriteCount = user.FavoritedRestaurants.length
+        const followerCount = user.Followers.length
+        const followingCount = user.Followings.length
+        return ({
+          user: user.toJSON(),
+          comment,
+          count: commentCount,
+          favoriteCount,
+          followerCount,
+          followingCount
+        })
       })
-      .catch(err => next(err))
+      .catch(err => { throw err })
   },
-  editUser: (req, res, next) => {
+  editUser: req => {
     return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error(" user didn't exist!")
-        res.render('users/edit', { user })
+        return user
       })
-      .catch(err => next(err))
+      .catch(err => { throw err })
   },
-  putUser: (req, res, next) => {
+  putUser: req => {
     const { file } = req
     const { name } = req.body
     const id = req.params.id
@@ -70,18 +80,13 @@ const userController = {
       localFileHandler(file)
     ]).then(([user, filePath]) => {
       if (!user) throw new Error("user didn't exist!")
-      return user.update({
+      return ({
         name,
         image: filePath || user.image
       })
-    })
-      .then(() => {
-        req.flash('success_messages', '使用者資料編輯成功')
-        res.redirect(`/users/${id}`)
-      })
-      .catch(err => next(err))
+    }).catch(err => { throw err })
   },
-  addFavorite: (req, res, next) => {
+  addFavorite: req => {
     const { restaurantId } = req.params
     return Promise.all([
       Restaurant.findByPk(restaurantId),
@@ -98,11 +103,11 @@ const userController = {
         userId: req.user.id,
         restaurantId: req.params.restaurantId
       })
-        .then(() => res.redirect('back'))
-        .catch(err => next(err))
+        .then(data => ({ data }))
+        .catch(err => { throw err })
     })
   },
-  removeFavorite: (req, res, next) => {
+  removeFavorite: req => {
     const { restaurantId } = req.params
     return Favorite.findOne({
       where: {
@@ -112,10 +117,10 @@ const userController = {
     }).then(favorite => {
       if (!favorite) throw new Error("you haven't favored this restaurant")
       return favorite.destroy()
-    }).then(() => res.redirect('back'))
-      .catch(err => next(err))
+    }).then(data => ({ data }))
+      .catch(err => { throw err })
   },
-  addLike: (req, res, next) => {
+  addLike: req => {
     const { restaurantId } = req.params
     return Promise.all([
       Restaurant.findByPk(restaurantId),
@@ -132,10 +137,10 @@ const userController = {
         userId: req.user.id,
         restaurantId: req.params.restaurantId
       })
-    }).then(() => res.redirect('back'))
-      .catch(err => next(err))
+    }).then(data => ({ data }))
+      .catch(err => { throw err })
   },
-  removeLike: (req, res, next) => {
+  removeLike: req => {
     const { restaurantId } = req.params
     return Like.findOne({
       where: {
@@ -145,10 +150,10 @@ const userController = {
     }).then(like => {
       if (!like) throw new Error("you heven't like this restaurant")
       return like.destroy()
-    }).then(() => res.redirect('back'))
-      .catch(err => next(err))
+    }).then(data => ({ data }))
+      .catch(err => { throw err })
   },
-  getTopUsers: (req, res, next) => {
+  getTopUsers: req => {
     return User.findAll({
       include: [{ model: User, as: 'Followers' }]
     }).then(users => {
@@ -156,12 +161,11 @@ const userController = {
         ...user.toJSON(),
         followerCount: user.Followers.length,
         isFollowed: req.user.Followings.some(data => data.id === user.id)
-      }))
-        .sort((a, b) => b.followerCount - a.followerCount)
-      res.render('top-user', { users: users })
-    }).catch(err => next(err))
+      })).sort((a, b) => b.followerCount - a.followerCount)
+      return ({ users })
+    }).catch(err => { throw err })
   },
-  addFollowing: (req, res, next) => {
+  addFollowing: req => {
     const { userId } = req.params
     return Promise.all([
       User.findByPk(userId),
@@ -179,10 +183,10 @@ const userController = {
         followingId: userId
       })
     })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+      .then(data => ({ data }))
+      .catch(err => { throw err })
   },
-  removeFollowing: (req, res, next) => {
+  removeFollowing: req => {
     return Followship.findOne({
       where: {
         followerId: req.user.id,
@@ -193,9 +197,8 @@ const userController = {
         if (!followship) throw new Error("You haven't followed this user!")
         return followship.destroy()
       })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+      .then(data => ({ data }))
+      .catch(err => { throw err })
   }
 }
-
-module.exports = userController
+module.exports = userService
