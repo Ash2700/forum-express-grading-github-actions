@@ -56,52 +56,36 @@ const restaurantServeries = {
     })
       .catch(err => { throw err })
   },
-  getDashboard: req => {
-    return Promise.all([
-      Restaurant.findByPk(req.params.id, {
-        include: Category,
-        nest: true,
-        raw: true
-      }),
-      Comment.count({ where: { restaurantId: req.params.id } }),
-      Favorite.count({ where: { restaurantId: req.params.id } })
-    ])
-      .then(([restaurant, commentCount, favoriteCount]) => {
-        return ({ restaurant, commentCount, favoriteCount })
-      })
-      .catch(err => { throw err })
-  },
-  getFeeds: req => {
+  getNewRestaurants: req => {
     const categoryId = Number(req.query.categoryId) || ''
-    return Promise.all([
-      Restaurant.findAll({
-        limit: 10,
-        order: [['createdAt', 'DESC']],
-        where: { ...categoryId ? { categoryId } : {} },
-        include: Category,
-        raw: true,
-        nest: true
-      }),
-      Comment.findAll({
-        limit: 12,
-        order: [['createdAt', 'DESC']],
-        include: [User, Restaurant],
-        raw: true,
-        nest: true
-      }),
-      Category.findAll({ raw: true })
-    ]).then(([restaurants, comments, categories]) => {
-      console.log(restaurants)
-      const backData = restaurants.map(item => ({
-        ...item,
-        description: item.description?.substring(0, 100)
-      }))
-      return ({
-        restaurants: backData,
-        comments,
-        categories,
-        categoryId
-      })
+    return Restaurant.findAll({
+      limit: 10,
+      order: [['createdAt', 'DESC']],
+      where: { ...categoryId ? { categoryId } : {} },
+      include: Category,
+      raw: true,
+      nest: true
+    })
+      .then(restaurants => {
+        const backData = restaurants.map(item => ({
+          ...item,
+          description: item.description?.substring(0, 100)
+        }))
+        return ({
+          restaurants: backData,
+          categoryId
+        })
+      }).catch(err => { throw err })
+  },
+  getNewComments: req => {
+    return Comment.findAll({
+      limit: 12,
+      order: [['createdAt', 'DESC']],
+      include: [User, Restaurant],
+      raw: true,
+      nest: true
+    }).then(comments => {
+      return comments
     }).catch(err => { throw err })
   },
   getTopRestaurants: req => {
@@ -119,6 +103,21 @@ const restaurantServeries = {
         .slice(0, 10)
       return ({ restaurants })
     }).catch(err => { throw err })
+  },
+  getCategories: req => {
+    return Category.findAll({ raw: true })
+      .then(categories => categories)
+      .catch(err => { throw err })
+  },
+  getCommentCount: req => {
+    return Comment.count({ where: { restaurantId: req.params.id } })
+      .then(commentCount => commentCount)
+      .catch(err => { throw err })
+  },
+  getFavoriteCount: req => {
+    return Favorite.count({ where: { restaurantId: req.params.id } })
+      .then(favoriteCount => favoriteCount)
+      .catch(err => { throw err })
   }
 }
 

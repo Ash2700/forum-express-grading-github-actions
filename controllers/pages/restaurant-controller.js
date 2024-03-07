@@ -6,12 +6,29 @@ const restaurantController = {
     wrapCode.forPageWrapServiceCall(restaurantServeries.getRestaurants, 'restaurants'),
   getRestaurant:
     wrapCode.forPageWrapServiceCall(restaurantServeries.getRestaurant, 'restaurant'),
-  getDashboard:
-    wrapCode.forPageWrapServiceCall(restaurantServeries.getDashboard, 'dashboard'),
-  getFeeds:
-    wrapCode.forPageWrapServiceCall(restaurantServeries.getFeeds, 'feed'),
+  getDashboard: (req, res, next) => {
+    return Promise.all([
+      restaurantServeries.getRestaurant(req),
+      restaurantServeries.getCommentCount(req),
+      restaurantServeries.getFavoriteCount(req)
+    ]).then(([restaurantsObject, commentCount, favoriteCount]) => {
+      const restaurant = restaurantsObject.restaurant
+      res.render('dashboard', { restaurant, commentCount, favoriteCount }
+      )
+    }).catch(err => next(err))
+  },
+  getFeeds: (req, res, next) => {
+    return Promise.all([
+      restaurantServeries.newComments(req),
+      restaurantServeries.newRestaurants(req),
+      restaurantServeries.getCategories()
+    ]).then(([comments, restaurantsObject, categories]) => {
+      const restaurants = restaurantsObject.restaurants
+      res.render('feed', { restaurants, comments, categories, categoryId: restaurants.categoryId })
+    }).catch(err => next(err))
+  },
   getTopRestaurants:
-  wrapCode.forPageWrapServiceCall(restaurantServeries.getTopRestaurants, 'top-restaurants')
+    wrapCode.forPageWrapServiceCall(restaurantServeries.getTopRestaurants, 'top-restaurants')
 }
 
 module.exports = restaurantController

@@ -67,7 +67,7 @@ const userService = {
     return User.findByPk(req.params.id, { raw: true })
       .then(user => {
         if (!user) throw new Error(" user didn't exist!")
-        return ({ user })
+        return user
       })
       .catch(err => { throw err })
   },
